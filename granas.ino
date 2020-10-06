@@ -92,6 +92,11 @@ namespace stick_state_index {
 
 namespace repeat {
     constexpr uint32_t INTERVAL_USEC = 33333;
+    constexpr InputButtonState ENABLE_INPUT_STATE = 0;
+}
+
+namespace pulse {
+    constexpr uint32_t DURATION_USEC = 16667;
     constexpr InputButtonState ENABLE_INPUT_STATE = input_state::R2;
 }
 
@@ -111,6 +116,7 @@ namespace output {
 struct StickState {
     bool pressed;
     uint32_t repeatTime;
+    uint32_t pulseTime;
 };
 
 struct {
@@ -161,21 +167,25 @@ public:
         if (inputStickStateDiff & newInputStickState & input_state::LEFT) {
             state.stick.left.pressed = true;
             state.stick.left.repeatTime = now;
+            state.stick.left.pulseTime = now;
         }
 
         if (inputStickStateDiff & newInputStickState & input_state::RIGHT) {
             state.stick.right.pressed = true;
             state.stick.right.repeatTime = now;
+            state.stick.right.pulseTime = now;
         }
 
         if (inputStickStateDiff & newInputStickState & input_state::UP) {
             state.stick.up.pressed = true;
             state.stick.up.repeatTime = now;
+            state.stick.up.pulseTime = now;
         }
 
         if (inputStickStateDiff & newInputStickState & input_state::DOWN) {
             state.stick.down.pressed = true;
             state.stick.down.repeatTime = now;
+            state.stick.down.pulseTime = now;
         }
 
         InputButtonState newInputButtonState = 0;
@@ -237,7 +247,9 @@ void loop() {
 
     uint32_t now = micros();
     bool repeatEnabled = state.input.button & repeat::ENABLE_INPUT_STATE;
+    bool pulseEnabled = state.input.button & pulse::ENABLE_INPUT_STATE;
     bool forceDown = state.input.button & force_down::ENABLE_INPUT_STATE;
+
 
     // substraction can avoid the glitch caused by overflow
     if (repeatEnabled && state.input.stick & input_state::LEFT && now - state.stick.left.repeatTime >= repeat::INTERVAL_USEC) {
@@ -265,9 +277,31 @@ void loop() {
         if (!forceDown) state.changed = true;
     }
 
-    if (state.input.stick & input_state::LEFT && (repeatEnabled ? state.stick.left.pressed : true)) {
+
+    if (pulseEnabled && state.input.stick & input_state::LEFT && state.stick.left.pressed && now - state.stick.left.pulseTime >= pulse::DURATION_USEC) {
+        state.stick.left.pressed = false;
+        state.changed = true;
+    }
+
+    if (pulseEnabled && state.input.stick & input_state::RIGHT && state.stick.right.pressed && now - state.stick.right.pulseTime >= pulse::DURATION_USEC) {
+        state.stick.right.pressed = false;
+        state.changed = true;
+    }
+
+    if (pulseEnabled && state.input.stick & input_state::UP && state.stick.up.pressed && now - state.stick.up.pulseTime >= pulse::DURATION_USEC) {
+        state.stick.up.pressed = false;
+        state.changed = true;
+    }
+
+    if (pulseEnabled && state.input.stick & input_state::DOWN && state.stick.down.pressed && now - state.stick.down.pulseTime >= pulse::DURATION_USEC) {
+        state.stick.down.pressed = false;
+        if (!forceDown) state.changed = true;
+    }
+
+
+    if (state.input.stick & input_state::LEFT && ((repeatEnabled || pulseEnabled) ? state.stick.left.pressed : true)) {
         Gamepad.xAxis(output::LEFT);
-    } else if (state.input.stick & input_state::RIGHT && (repeatEnabled ? state.stick.right.pressed : true)) {
+    } else if (state.input.stick & input_state::RIGHT && ((repeatEnabled || pulseEnabled) ? state.stick.right.pressed : true)) {
         Gamepad.xAxis(output::RIGHT);
     } else {
         Gamepad.xAxis(output::NEUTRAL);
@@ -275,9 +309,9 @@ void loop() {
 
     if (forceDown) {
         Gamepad.yAxis(output::DOWN);
-    } else if (state.input.stick & input_state::UP && (repeatEnabled ? state.stick.up.pressed : true)) {
+    } else if (state.input.stick & input_state::UP && ((repeatEnabled || pulseEnabled) ? state.stick.up.pressed : true)) {
         Gamepad.yAxis(output::UP);
-    } else if (state.input.stick & input_state::DOWN && (repeatEnabled ? state.stick.down.pressed : true)) {
+    } else if (state.input.stick & input_state::DOWN && ((repeatEnabled || pulseEnabled) ? state.stick.down.pressed : true)) {
         Gamepad.yAxis(output::DOWN);
     } else {
         Gamepad.yAxis(output::NEUTRAL);
