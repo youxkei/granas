@@ -4,178 +4,204 @@
 
 #include <HID-Project.h>
 
-using StickState = uint8_t;
-using ButtonState = uint32_t;
+using InputStickState = uint8_t;
+using InputButtonState = uint32_t;
 
 constexpr bool OUTPUT_TO_SERIAL = false;
 
-constexpr size_t INPUT_X_AXIS_INDEX  = 1;
-constexpr size_t INPUT_Y_AXIS_INDEX  = 2;
-constexpr size_t INPUT_BUTTON_INDEX  = 5;
-constexpr size_t INPUT_TRIGGER_INDEX = 6;
-constexpr size_t INPUT_CENTER_INDEX  = 7;
+namespace buf_index {
+    constexpr size_t X_AXIS  = 1;
+    constexpr size_t Y_AXIS  = 2;
+    constexpr size_t BUTTON  = 5;
+    constexpr size_t TRIGGER = 6;
+    constexpr size_t CENTER  = 7;
+}
 
-constexpr uint8_t INPUT_LEFT  = 0x00;
-constexpr uint8_t INPUT_RIGHT = 0xFF;
-constexpr uint8_t INPUT_UP    = 0x00;
-constexpr uint8_t INPUT_DOWN  = 0xFF;
+namespace input {
+    constexpr uint8_t LEFT  = 0x00;
+    constexpr uint8_t RIGHT = 0xFF;
+    constexpr uint8_t UP    = 0x00;
+    constexpr uint8_t DOWN  = 0xFF;
 
-constexpr uint8_t INPUT_SQUARE   = 0x10;
-constexpr uint8_t INPUT_CROSS    = 0x20;
-constexpr uint8_t INPUT_CIRCLE   = 0x40;
-constexpr uint8_t INPUT_TRIANGLE = 0x80;
+    constexpr uint8_t SQUARE   = 0x10;
+    constexpr uint8_t CROSS    = 0x20;
+    constexpr uint8_t CIRCLE   = 0x40;
+    constexpr uint8_t TRIANGLE = 0x80;
 
-constexpr uint8_t INPUT_L1     = 0x01;
-constexpr uint8_t INPUT_R1     = 0x02;
-constexpr uint8_t INPUT_L2     = 0x04;
-constexpr uint8_t INPUT_R2     = 0x08;
-constexpr uint8_t INPUT_SELECT = 0x10;
-constexpr uint8_t INPUT_START  = 0x20;
-constexpr uint8_t INPUT_L3     = 0x40;
-constexpr uint8_t INPUT_R3     = 0x80;
+    constexpr uint8_t L1     = 0x01;
+    constexpr uint8_t R1     = 0x02;
+    constexpr uint8_t L2     = 0x04;
+    constexpr uint8_t R2     = 0x08;
+    constexpr uint8_t SELECT = 0x10;
+    constexpr uint8_t START  = 0x20;
+    constexpr uint8_t L3     = 0x40;
+    constexpr uint8_t R3     = 0x80;
 
-constexpr uint8_t INPUT_CENTER = 0x01;
+    constexpr uint8_t CENTER = 0x01;
+}
 
-constexpr int16_t OUTPUT_NEUTRAL = 0;
-constexpr int16_t OUTPUT_LEFT    = -0x7FFF;
-constexpr int16_t OUTPUT_RIGHT   = 0x7FFF;
-constexpr int16_t OUTPUT_UP      = -0x7FFF;
-constexpr int16_t OUTPUT_DOWN    = 0x7FFF;
+namespace input_state {
+    constexpr InputStickState LEFT  = 1 << 0;
+    constexpr InputStickState RIGHT = 1 << 1;
+    constexpr InputStickState UP    = 1 << 2;
+    constexpr InputStickState DOWN  = 1 << 3;
 
-constexpr StickState STATE_LEFT  = 1 << 0;
-constexpr StickState STATE_RIGHT = 1 << 1;
-constexpr StickState STATE_UP    = 1 << 2;
-constexpr StickState STATE_DOWN  = 1 << 3;
+    constexpr InputButtonState SQUARE   = 1 << 0;
+    constexpr InputButtonState CROSS    = 1 << 1;
+    constexpr InputButtonState CIRCLE   = 1 << 2;
+    constexpr InputButtonState TRIANGLE = 1 << 3;
+    constexpr InputButtonState L1       = 1 << 4;
+    constexpr InputButtonState R1       = 1 << 5;
+    constexpr InputButtonState L2       = 1 << 6;
+    constexpr InputButtonState R2       = 1 << 7;
+    constexpr InputButtonState SELECT   = 1 << 8;
+    constexpr InputButtonState START    = 1 << 9;
+    constexpr InputButtonState L3       = 1 << 10;
+    constexpr InputButtonState R3       = 1 << 11;
+    constexpr InputButtonState CENTER   = 1 << 12;
+}
 
-constexpr ButtonState STATE_SQUARE   = 1 << 0;
-constexpr ButtonState STATE_CROSS    = 1 << 1;
-constexpr ButtonState STATE_CIRCLE   = 1 << 2;
-constexpr ButtonState STATE_TRIANGLE = 1 << 3;
-constexpr ButtonState STATE_L1       = 1 << 4;
-constexpr ButtonState STATE_R1       = 1 << 5;
-constexpr ButtonState STATE_L2       = 1 << 6;
-constexpr ButtonState STATE_R2       = 1 << 7;
-constexpr ButtonState STATE_SELECT   = 1 << 8;
-constexpr ButtonState STATE_START    = 1 << 9;
-constexpr ButtonState STATE_L3       = 1 << 10;
-constexpr ButtonState STATE_R3       = 1 << 11;
-constexpr ButtonState STATE_CENTER   = 1 << 12;
+namespace input_to_input_state {
+    constexpr InputStickState LEFT  = input_state::LEFT;
+    constexpr InputStickState RIGHT = input_state::RIGHT;
+    constexpr InputStickState UP    = input_state::UP;
+    constexpr InputStickState DOWN  = input_state::DOWN;
 
-constexpr StickState INPUT_LEFT_TO_STATE  = STATE_LEFT;
-constexpr StickState INPUT_RIGHT_TO_STATE = STATE_RIGHT;
-constexpr StickState INPUT_UP_TO_STATE    = STATE_UP;
-constexpr StickState INPUT_DOWN_TO_STATE  = STATE_DOWN;
+    constexpr InputButtonState SQUARE   = input_state::SQUARE;
+    constexpr InputButtonState CROSS    = input_state::CROSS;
+    constexpr InputButtonState CIRCLE   = input_state::CIRCLE;
+    constexpr InputButtonState TRIANGLE = input_state::TRIANGLE;
+    constexpr InputButtonState L1       = input_state::R1;
+    constexpr InputButtonState R1       = input_state::L3;
+    constexpr InputButtonState L2       = input_state::R2;
+    constexpr InputButtonState R2       = input_state::R3;
+    constexpr InputButtonState SELECT   = input_state::SELECT;
+    constexpr InputButtonState START    = input_state::START;
+    constexpr InputButtonState L3       = input_state::L1;
+    constexpr InputButtonState R3       = input_state::L2;
+    constexpr InputButtonState CENTER   = input_state::CENTER;
+}
 
-constexpr ButtonState INPUT_SQUARE_TO_STATE   = STATE_SQUARE;
-constexpr ButtonState INPUT_CROSS_TO_STATE    = STATE_CROSS;
-constexpr ButtonState INPUT_CIRCLE_TO_STATE   = STATE_CIRCLE;
-constexpr ButtonState INPUT_TRIANGLE_TO_STATE = STATE_TRIANGLE;
-constexpr ButtonState INPUT_L1_TO_STATE       = STATE_R1;
-constexpr ButtonState INPUT_R1_TO_STATE       = STATE_L3;
-constexpr ButtonState INPUT_L2_TO_STATE       = STATE_R2;
-constexpr ButtonState INPUT_R2_TO_STATE       = STATE_R3;
-constexpr ButtonState INPUT_SELECT_TO_STATE   = STATE_SELECT;
-constexpr ButtonState INPUT_START_TO_STATE    = STATE_START;
-constexpr ButtonState INPUT_L3_TO_STATE       = STATE_L1;
-constexpr ButtonState INPUT_R3_TO_STATE       = STATE_L2;
-constexpr ButtonState INPUT_CENTER_TO_STATE   = STATE_CENTER;
+namespace stick_state_index {
+    constexpr size_t LEFT = 0;
+    constexpr size_t RIGHT = 1;
+    constexpr size_t UP = 2;
+    constexpr size_t DOWN = 3;
+    constexpr size_t COUNT = 4;
+}
 
-constexpr uint32_t REPEAT_INTERVAL_USEC = 33333;
-constexpr ButtonState REPEAT_ENABLE = STATE_R2;
-constexpr ButtonState FORCE_DOWN = STATE_L2;
+namespace repeat {
+    constexpr uint32_t INTERVAL_USEC = 33333;
+    constexpr InputButtonState ENABLE_INPUT_STATE = input_state::R2;
+}
 
-StickState stickState;
-ButtonState buttonState;
+namespace force_down {
+    constexpr InputButtonState ENABLE_INPUT_STATE = input_state::L2;
+}
+
+
+namespace output {
+    constexpr int16_t NEUTRAL = 0;
+    constexpr int16_t LEFT    = -0x7FFF;
+    constexpr int16_t RIGHT   = 0x7FFF;
+    constexpr int16_t UP      = -0x7FFF;
+    constexpr int16_t DOWN    = 0x7FFF;
+}
+
+struct StickState {
+    bool pressed;
+    uint32_t repeatTime;
+};
 
 struct {
-    bool left;
-    bool right;
-    bool up;
-    bool down;
-} repeatState;
+    struct {
+        InputStickState stick;
+        InputButtonState button;
+    } input;
 
-struct {
-    uint32_t left;
-    uint32_t right;
-    uint32_t up;
-    uint32_t down;
-} repeatTime;
+    struct {
+        StickState left;
+        StickState right;
+        StickState up;
+        StickState down;
+    } stick;
 
-bool changed = false;
+    bool changed;
+} state;
 
 class : public HIDReportParser {
 public:
     virtual void Parse(USBHID *hid, bool is_rpt_id, uint8_t len, uint8_t *buf) {
         uint32_t now = micros();
 
-        StickState newStickState = 0;
+        InputStickState newInputStickState = 0;
 
-        switch (buf[INPUT_X_AXIS_INDEX]) {
-            case INPUT_LEFT:
-                newStickState |= INPUT_LEFT_TO_STATE;
+        switch (buf[buf_index::X_AXIS]) {
+            case input::LEFT:
+                newInputStickState |= input_to_input_state::LEFT;
                 break;
 
-            case INPUT_RIGHT:
-                newStickState |= INPUT_RIGHT_TO_STATE;
-                break;
-        }
-
-        switch (buf[INPUT_Y_AXIS_INDEX]) {
-            case INPUT_UP:
-                newStickState |= INPUT_UP_TO_STATE;
-                break;
-
-            case INPUT_DOWN:
-                newStickState |= INPUT_DOWN_TO_STATE;
+            case input::RIGHT:
+                newInputStickState |= input_to_input_state::RIGHT;
                 break;
         }
 
-        StickState stickDiff = stickState ^ newStickState;
+        switch (buf[buf_index::Y_AXIS]) {
+            case input::UP:
+                newInputStickState |= input_to_input_state::UP;
+                break;
 
-        if (stickDiff & newStickState & STATE_LEFT) {
-            repeatTime.left = now;
-            repeatState.left = true;
+            case input::DOWN:
+                newInputStickState |= input_to_input_state::DOWN;
+                break;
         }
 
-        if (stickDiff & newStickState & STATE_RIGHT) {
-            repeatTime.right = now;
-            repeatState.right = true;
+        InputStickState inputStickStateDiff = state.input.stick ^ newInputStickState;
+
+        if (inputStickStateDiff & newInputStickState & input_state::LEFT) {
+            state.stick.left.pressed = true;
+            state.stick.left.repeatTime = now;
         }
 
-        if (stickDiff & newStickState & STATE_UP) {
-            repeatTime.up = now;
-            repeatState.up = true;
+        if (inputStickStateDiff & newInputStickState & input_state::RIGHT) {
+            state.stick.right.pressed = true;
+            state.stick.right.repeatTime = now;
         }
 
-        if (stickDiff & newStickState & STATE_DOWN) {
-            repeatTime.down = now;
-            repeatState.down = true;
+        if (inputStickStateDiff & newInputStickState & input_state::UP) {
+            state.stick.up.pressed = true;
+            state.stick.up.repeatTime = now;
         }
 
-        ButtonState newButtonState = 0;
-
-        if (buf[INPUT_BUTTON_INDEX]  & INPUT_SQUARE)   newButtonState |= INPUT_SQUARE_TO_STATE;
-        if (buf[INPUT_BUTTON_INDEX]  & INPUT_CROSS)    newButtonState |= INPUT_CROSS_TO_STATE;
-        if (buf[INPUT_BUTTON_INDEX]  & INPUT_CIRCLE)   newButtonState |= INPUT_CIRCLE_TO_STATE;
-        if (buf[INPUT_BUTTON_INDEX]  & INPUT_TRIANGLE) newButtonState |= INPUT_TRIANGLE_TO_STATE;
-        if (buf[INPUT_TRIGGER_INDEX] & INPUT_L1)       newButtonState |= INPUT_L1_TO_STATE;
-        if (buf[INPUT_TRIGGER_INDEX] & INPUT_R1)       newButtonState |= INPUT_R1_TO_STATE;
-        if (buf[INPUT_TRIGGER_INDEX] & INPUT_L2)       newButtonState |= INPUT_L2_TO_STATE;
-        if (buf[INPUT_TRIGGER_INDEX] & INPUT_R2)       newButtonState |= INPUT_R2_TO_STATE;
-        if (buf[INPUT_TRIGGER_INDEX] & INPUT_SELECT)   newButtonState |= INPUT_SELECT_TO_STATE;
-        if (buf[INPUT_TRIGGER_INDEX] & INPUT_START)    newButtonState |= INPUT_START_TO_STATE;
-        if (buf[INPUT_TRIGGER_INDEX] & INPUT_L3)       newButtonState |= INPUT_L3_TO_STATE;
-        if (buf[INPUT_TRIGGER_INDEX] & INPUT_R3)       newButtonState |= INPUT_R3_TO_STATE;
-        if (buf[INPUT_CENTER_INDEX]  & INPUT_CENTER)   newButtonState |= INPUT_CENTER_TO_STATE;
-
-        ButtonState buttonDiff = buttonState ^ newButtonState;
-
-        if (stickDiff || buttonDiff) {
-            changed = true;
+        if (inputStickStateDiff & newInputStickState & input_state::DOWN) {
+            state.stick.down.pressed = true;
+            state.stick.down.repeatTime = now;
         }
 
-        stickState = newStickState;
-        buttonState = newButtonState;
+        InputButtonState newInputButtonState = 0;
+
+        if (buf[buf_index::BUTTON]  & input::SQUARE)   newInputButtonState |= input_to_input_state::SQUARE;
+        if (buf[buf_index::BUTTON]  & input::CROSS)    newInputButtonState |= input_to_input_state::CROSS;
+        if (buf[buf_index::BUTTON]  & input::CIRCLE)   newInputButtonState |= input_to_input_state::CIRCLE;
+        if (buf[buf_index::BUTTON]  & input::TRIANGLE) newInputButtonState |= input_to_input_state::TRIANGLE;
+        if (buf[buf_index::TRIGGER] & input::L1)       newInputButtonState |= input_to_input_state::L1;
+        if (buf[buf_index::TRIGGER] & input::R1)       newInputButtonState |= input_to_input_state::R1;
+        if (buf[buf_index::TRIGGER] & input::L2)       newInputButtonState |= input_to_input_state::L2;
+        if (buf[buf_index::TRIGGER] & input::R2)       newInputButtonState |= input_to_input_state::R2;
+        if (buf[buf_index::TRIGGER] & input::SELECT)   newInputButtonState |= input_to_input_state::SELECT;
+        if (buf[buf_index::TRIGGER] & input::START)    newInputButtonState |= input_to_input_state::START;
+        if (buf[buf_index::TRIGGER] & input::L3)       newInputButtonState |= input_to_input_state::L3;
+        if (buf[buf_index::TRIGGER] & input::R3)       newInputButtonState |= input_to_input_state::R3;
+        if (buf[buf_index::CENTER]  & input::CENTER)   newInputButtonState |= input_to_input_state::CENTER;
+
+        InputButtonState inputButtonStateDiff = state.input.button ^ newInputButtonState;
+
+        if (inputStickStateDiff || inputButtonStateDiff) {
+            state.changed = true;
+        }
+
+        state.input.stick = newInputStickState;
+        state.input.button = newInputButtonState;
     }
 } hidReportParser;
 
@@ -204,66 +230,61 @@ void setup() {
     }
 
     Gamepad.begin();
-
-    uint32_t i = -2;
-    Serial.println(i, HEX);
-    uint32_t j = i + 4;
-    Serial.println(j, HEX);
-    Serial.println(j - i, HEX);
 }
 
 void loop() {
     usb.Task();
 
     uint32_t now = micros();
-    bool repeatEnabled = buttonState & REPEAT_ENABLE;
-    bool forceDown = buttonState & FORCE_DOWN;
+    bool repeatEnabled = state.input.button & repeat::ENABLE_INPUT_STATE;
+    bool forceDown = state.input.button & force_down::ENABLE_INPUT_STATE;
 
-    if (repeatEnabled && stickState & STATE_LEFT && now - repeatTime.left >= REPEAT_INTERVAL_USEC) {
-        repeatTime.left += REPEAT_INTERVAL_USEC;
-        repeatState.left = !repeatState.left;
-        changed = true;
+    // substraction can avoid the glitch caused by overflow
+    if (repeatEnabled && state.input.stick & input_state::LEFT && now - state.stick.left.repeatTime >= repeat::INTERVAL_USEC) {
+        state.stick.left.pressed = !state.stick.left.pressed;
+        state.stick.left.repeatTime += repeat::INTERVAL_USEC;
+        state.changed = true;
     }
 
-    if (repeatEnabled && stickState & STATE_RIGHT && now - repeatTime.right >= REPEAT_INTERVAL_USEC) {
-        repeatTime.right += REPEAT_INTERVAL_USEC;
-        repeatState.right = !repeatState.right;
-        changed = true;
+    if (repeatEnabled && state.input.stick & input_state::RIGHT && now - state.stick.right.repeatTime >= repeat::INTERVAL_USEC) {
+        state.stick.right.pressed = !state.stick.right.pressed;
+        state.stick.right.repeatTime += repeat::INTERVAL_USEC;
+        state.changed = true;
     }
 
-    if (repeatEnabled && stickState & STATE_UP && now - repeatTime.up >= REPEAT_INTERVAL_USEC) {
-        repeatTime.up += REPEAT_INTERVAL_USEC;
-        repeatState.up = !repeatState.up;
-        changed = true;
+    if (repeatEnabled && state.input.stick & input_state::UP && now - state.stick.up.repeatTime >= repeat::INTERVAL_USEC) {
+        state.stick.up.pressed = !state.stick.up.pressed;
+        state.stick.up.repeatTime += repeat::INTERVAL_USEC;
+        state.changed = true;
     }
 
-    if (repeatEnabled && stickState & STATE_DOWN && now - repeatTime.down >= REPEAT_INTERVAL_USEC) {
-        repeatTime.down += REPEAT_INTERVAL_USEC;
-        repeatState.down = !repeatState.down;
+    if (repeatEnabled && state.input.stick & input_state::DOWN && now - state.stick.down.repeatTime >= repeat::INTERVAL_USEC) {
+        state.stick.down.pressed = !state.stick.down.pressed;
+        state.stick.down.repeatTime += repeat::INTERVAL_USEC;
 
-        if (!forceDown) changed = true;
+        if (!forceDown) state.changed = true;
     }
 
-    if (stickState & STATE_LEFT && (repeatEnabled ? repeatState.left : true)) {
-        Gamepad.xAxis(OUTPUT_LEFT);
-    } else if (stickState & STATE_RIGHT && (repeatEnabled ? repeatState.right : true)) {
-        Gamepad.xAxis(OUTPUT_RIGHT);
+    if (state.input.stick & input_state::LEFT && (repeatEnabled ? state.stick.left.pressed : true)) {
+        Gamepad.xAxis(output::LEFT);
+    } else if (state.input.stick & input_state::RIGHT && (repeatEnabled ? state.stick.right.pressed : true)) {
+        Gamepad.xAxis(output::RIGHT);
     } else {
-        Gamepad.xAxis(OUTPUT_NEUTRAL);
+        Gamepad.xAxis(output::NEUTRAL);
     }
 
     if (forceDown) {
-        Gamepad.yAxis(OUTPUT_DOWN);
-    } else if (stickState & STATE_UP && (repeatEnabled ? repeatState.up : true)) {
-        Gamepad.yAxis(OUTPUT_UP);
-    } else if (stickState & STATE_DOWN && (repeatEnabled ? repeatState.down : true)) {
-        Gamepad.yAxis(OUTPUT_DOWN);
+        Gamepad.yAxis(output::DOWN);
+    } else if (state.input.stick & input_state::UP && (repeatEnabled ? state.stick.up.pressed : true)) {
+        Gamepad.yAxis(output::UP);
+    } else if (state.input.stick & input_state::DOWN && (repeatEnabled ? state.stick.down.pressed : true)) {
+        Gamepad.yAxis(output::DOWN);
     } else {
-        Gamepad.yAxis(OUTPUT_NEUTRAL);
+        Gamepad.yAxis(output::NEUTRAL);
     }
 
-    Gamepad.buttons(buttonState);
+    Gamepad.buttons(state.input.button);
 
-    if (changed) Gamepad.write();
-    changed = false;
+    if (state.changed) Gamepad.write();
+    state.changed = false;
 }
