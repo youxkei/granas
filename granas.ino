@@ -4,88 +4,88 @@
 
 #include <HID-Project.h>
 
-#define OUTPUT_TO_SERIAL 0
+using StickState = uint8_t;
+using ButtonState = uint32_t;
 
-#define INPUT_X_AXIS_INDEX 1
-#define INPUT_Y_AXIS_INDEX 2
-#define INPUT_BUTTON_INDEX 5
-#define INPUT_TRIGGER_INDEX 6
-#define INPUT_CENTER_INDEX 7
+constexpr bool OUTPUT_TO_SERIAL = false;
 
-#define INPUT_LEFT    0x00
-#define INPUT_RIGHT   0xFF
-#define INPUT_UP      0x00
-#define INPUT_DOWN    0xFF
+constexpr size_t INPUT_X_AXIS_INDEX  = 1;
+constexpr size_t INPUT_Y_AXIS_INDEX  = 2;
+constexpr size_t INPUT_BUTTON_INDEX  = 5;
+constexpr size_t INPUT_TRIGGER_INDEX = 6;
+constexpr size_t INPUT_CENTER_INDEX  = 7;
 
-#define INPUT_SQUARE   0x10
-#define INPUT_CROSS    0x20
-#define INPUT_CIRCLE   0x40
-#define INPUT_TRIANGLE 0x80
+constexpr uint8_t INPUT_LEFT  = 0x00;
+constexpr uint8_t INPUT_RIGHT = 0xFF;
+constexpr uint8_t INPUT_UP    = 0x00;
+constexpr uint8_t INPUT_DOWN  = 0xFF;
 
-#define INPUT_L1     0x01
-#define INPUT_R1     0x02
-#define INPUT_L2     0x04
-#define INPUT_R2     0x08
-#define INPUT_SELECT 0x10
-#define INPUT_START  0x20
-#define INPUT_L3     0x40
-#define INPUT_R3     0x80
+constexpr uint8_t INPUT_SQUARE   = 0x10;
+constexpr uint8_t INPUT_CROSS    = 0x20;
+constexpr uint8_t INPUT_CIRCLE   = 0x40;
+constexpr uint8_t INPUT_TRIANGLE = 0x80;
 
-#define INPUT_CENTER 0x01
+constexpr uint8_t INPUT_L1     = 0x01;
+constexpr uint8_t INPUT_R1     = 0x02;
+constexpr uint8_t INPUT_L2     = 0x04;
+constexpr uint8_t INPUT_R2     = 0x08;
+constexpr uint8_t INPUT_SELECT = 0x10;
+constexpr uint8_t INPUT_START  = 0x20;
+constexpr uint8_t INPUT_L3     = 0x40;
+constexpr uint8_t INPUT_R3     = 0x80;
 
-#define OUTPUT_NEUTRAL  0
-#define OUTPUT_LEFT     -0x7FFF
-#define OUTPUT_RIGHT    0x7FFF
-#define OUTPUT_UP       -0x7FFF
-#define OUTPUT_DOWN     0x7FFF
+constexpr uint8_t INPUT_CENTER = 0x01;
 
-#define STATE_LEFT     (1 << 0)
-#define STATE_RIGHT    (1 << 1)
-#define STATE_UP       (1 << 2)
-#define STATE_DOWN     (1 << 3)
+constexpr int16_t OUTPUT_NEUTRAL = 0;
+constexpr int16_t OUTPUT_LEFT    = -0x7FFF;
+constexpr int16_t OUTPUT_RIGHT   = 0x7FFF;
+constexpr int16_t OUTPUT_UP      = -0x7FFF;
+constexpr int16_t OUTPUT_DOWN    = 0x7FFF;
 
-#define STATE_SQUARE   (1 << 0)
-#define STATE_CROSS    (1 << 1)
-#define STATE_CIRCLE   (1 << 2)
-#define STATE_TRIANGLE (1 << 3)
-#define STATE_L1       (1 << 4)
-#define STATE_R1       (1 << 5)
-#define STATE_L2       (1 << 6)
-#define STATE_R2       (1 << 7)
-#define STATE_SELECT   (1 << 8)
-#define STATE_START    (1 << 9)
-#define STATE_L3       (1 << 10)
-#define STATE_R3       (1 << 11)
-#define STATE_CENTER   (1 << 12)
+constexpr StickState STATE_LEFT  = 1 << 0;
+constexpr StickState STATE_RIGHT = 1 << 1;
+constexpr StickState STATE_UP    = 1 << 2;
+constexpr StickState STATE_DOWN  = 1 << 3;
 
-#define INPUT_LEFT_TO_STATE  STATE_LEFT
-#define INPUT_RIGHT_TO_STATE STATE_RIGHT
-#define INPUT_UP_TO_STATE    STATE_UP
-#define INPUT_DOWN_TO_STATE  STATE_DOWN
+constexpr ButtonState STATE_SQUARE   = 1 << 0;
+constexpr ButtonState STATE_CROSS    = 1 << 1;
+constexpr ButtonState STATE_CIRCLE   = 1 << 2;
+constexpr ButtonState STATE_TRIANGLE = 1 << 3;
+constexpr ButtonState STATE_L1       = 1 << 4;
+constexpr ButtonState STATE_R1       = 1 << 5;
+constexpr ButtonState STATE_L2       = 1 << 6;
+constexpr ButtonState STATE_R2       = 1 << 7;
+constexpr ButtonState STATE_SELECT   = 1 << 8;
+constexpr ButtonState STATE_START    = 1 << 9;
+constexpr ButtonState STATE_L3       = 1 << 10;
+constexpr ButtonState STATE_R3       = 1 << 11;
+constexpr ButtonState STATE_CENTER   = 1 << 12;
 
-#define INPUT_SQUARE_TO_STATE   STATE_SQUARE
-#define INPUT_CROSS_TO_STATE    STATE_CROSS
-#define INPUT_CIRCLE_TO_STATE   STATE_CIRCLE
-#define INPUT_TRIANGLE_TO_STATE STATE_TRIANGLE
-#define INPUT_L1_TO_STATE       STATE_R1
-#define INPUT_R1_TO_STATE       STATE_L3
-#define INPUT_L2_TO_STATE       STATE_R2
-#define INPUT_R2_TO_STATE       STATE_R3
-#define INPUT_SELECT_TO_STATE   STATE_SELECT
-#define INPUT_START_TO_STATE    STATE_START
-#define INPUT_L3_TO_STATE       STATE_L1
-#define INPUT_R3_TO_STATE       STATE_L2
-#define INPUT_CENTER_TO_STATE   STATE_CENTER
+constexpr StickState INPUT_LEFT_TO_STATE  = STATE_LEFT;
+constexpr StickState INPUT_RIGHT_TO_STATE = STATE_RIGHT;
+constexpr StickState INPUT_UP_TO_STATE    = STATE_UP;
+constexpr StickState INPUT_DOWN_TO_STATE  = STATE_DOWN;
 
-#define StickState uint8_t
+constexpr ButtonState INPUT_SQUARE_TO_STATE   = STATE_SQUARE;
+constexpr ButtonState INPUT_CROSS_TO_STATE    = STATE_CROSS;
+constexpr ButtonState INPUT_CIRCLE_TO_STATE   = STATE_CIRCLE;
+constexpr ButtonState INPUT_TRIANGLE_TO_STATE = STATE_TRIANGLE;
+constexpr ButtonState INPUT_L1_TO_STATE       = STATE_R1;
+constexpr ButtonState INPUT_R1_TO_STATE       = STATE_L3;
+constexpr ButtonState INPUT_L2_TO_STATE       = STATE_R2;
+constexpr ButtonState INPUT_R2_TO_STATE       = STATE_R3;
+constexpr ButtonState INPUT_SELECT_TO_STATE   = STATE_SELECT;
+constexpr ButtonState INPUT_START_TO_STATE    = STATE_START;
+constexpr ButtonState INPUT_L3_TO_STATE       = STATE_L1;
+constexpr ButtonState INPUT_R3_TO_STATE       = STATE_L2;
+constexpr ButtonState INPUT_CENTER_TO_STATE   = STATE_CENTER;
+
+constexpr uint32_t REPEAT_INTERVAL_USEC = 33333;
+constexpr ButtonState REPEAT_ENABLE = STATE_R2;
+constexpr ButtonState FORCE_DOWN = STATE_L2;
+
 StickState stickState;
-
-#define ButtonState uint32_t
 ButtonState buttonState;
-
-#define REPEAT_INTERVAL_USEC 33333
-#define REPEAT_ENABLE STATE_R2
-#define FORCE_DOWN STATE_L2
 
 struct {
     bool left;
@@ -184,23 +184,23 @@ USBHub hub(&usb);
 HIDUniversal hid(&usb);
 
 void setup() {
-#if OUTPUT_TO_SERIAL
-    Serial.begin(115200);
-    while (!Serial);
+    if constexpr (OUTPUT_TO_SERIAL) {
+        Serial.begin(115200);
+        while (!Serial);
 
-    Serial.println("start");
-#endif
+        Serial.println("start");
+    }
 
     if (usb.Init() == -1) {
-#if OUTPUT_TO_SERIAL
-        Serial.println("failed to initialize USB");
-#endif
+        if constexpr (OUTPUT_TO_SERIAL) {
+            Serial.println("failed to initialize USB");
+        }
     }
 
     if (!hid.SetReportParser(0, &hidReportParser)) {
-#if OUTPUT_TO_SERIAL
-        Serial.println("failed to set report parser");
-#endif
+        if constexpr (OUTPUT_TO_SERIAL) {
+            Serial.println("failed to set report parser");
+        }
     }
 
     Gamepad.begin();
