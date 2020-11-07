@@ -92,16 +92,16 @@ namespace stick_state_index {
 
 namespace repeat {
     constexpr uint32_t INTERVAL_USEC = 33333;
-    constexpr InputButtonState ENABLE_INPUT_STATE = 0;
+    constexpr InputButtonState ENABLE_INPUT_STATE = input_state::R2;
 }
 
 namespace pulse {
     constexpr uint32_t DURATION_USEC = 16667;
-    constexpr InputButtonState ENABLE_INPUT_STATE = input_state::R2;
+    constexpr InputButtonState ENABLE_INPUT_STATE = 0;
 }
 
 namespace force_down {
-    constexpr InputButtonState ENABLE_INPUT_STATE = input_state::L2;
+    constexpr InputButtonState ENABLE_INPUT_STATE = input_state::TRIANGLE;
 }
 
 
