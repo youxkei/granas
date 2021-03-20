@@ -101,7 +101,7 @@ namespace pulse {
 }
 
 namespace force_down {
-    constexpr InputButtonState ENABLE_INPUT_STATE = input_state::TRIANGLE;
+    constexpr InputButtonState ENABLE_INPUT_STATE = input_state::L2;
 }
 
 
